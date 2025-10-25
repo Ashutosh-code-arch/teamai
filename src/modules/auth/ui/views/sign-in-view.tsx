@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { OctagonAlertIcon } from "lucide-react";
+import { FaGithub, FaGoogle } from "react-icons/fa";
 import {
     Form,
     FormControl,
@@ -14,7 +16,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertTitle } from "@/components/ui/alert";
-import { OctagonAlertIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
@@ -45,6 +46,7 @@ const SignInView = () => {
             {
                 email: data.email,
                 password: data.password,
+                callbackURL: "/",
             },
             {
                 onSuccess: () => {
@@ -58,6 +60,27 @@ const SignInView = () => {
             }
         );
     };
+
+    const handleSocialSignIn = async (provider: "google" | "github") => {
+        setError(null);
+        setPending(true);
+        await authClient.signIn.social(
+            {
+                provider: provider,
+                callbackURL: "/",
+            },
+            {
+                onSuccess: () => {
+                    setPending(false);
+                },
+                onError: ({ error }) => {
+                    setError(error?.message);
+                    setPending(false);
+                },
+            }
+        );
+    };
+
     return (
         <div className="flex flex-col gap-6">
             <Card className="overflow-hidden p-0">
@@ -138,16 +161,22 @@ const SignInView = () => {
                                         type="button"
                                         disabled={pending}
                                         className="w-full"
+                                        onClick={() =>
+                                            handleSocialSignIn("google")
+                                        }
                                     >
-                                        Google
+                                        <FaGoogle />
                                     </Button>
                                     <Button
                                         variant="outline"
                                         disabled={pending}
                                         type="button"
                                         className="w-full"
+                                        onClick={() =>
+                                            handleSocialSignIn("github")
+                                        }
                                     >
-                                        Github
+                                        <FaGithub />
                                     </Button>
                                 </div>
                                 <div className="text-center text-sm">

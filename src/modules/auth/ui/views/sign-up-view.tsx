@@ -1,9 +1,10 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { FaGithub, FaGoogle } from "react-icons/fa";
+import { OctagonAlertIcon } from "lucide-react";
 import {
     Form,
     FormControl,
@@ -12,13 +13,14 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Alert, AlertTitle } from "@/components/ui/alert";
-import { OctagonAlertIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
+
 import { authClient } from "@/lib/auth-client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 
 const formSchema = z
@@ -55,11 +57,32 @@ const SignUpView = () => {
                 name: data.name,
                 email: data.email,
                 password: data.password,
+                callbackURL: "/",
             },
             {
                 onSuccess: () => {
                     setPending(false);
                     router.push("/");
+                },
+                onError: ({ error }) => {
+                    setError(error?.message);
+                    setPending(false);
+                },
+            }
+        );
+    };
+
+    const handleSocialSignIn = async (provider: "google" | "github") => {
+        setError(null);
+        setPending(true);
+        await authClient.signIn.social(
+            {
+                provider: provider,
+                callbackURL: "/",
+            },
+            {
+                onSuccess: () => {
+                    setPending(false);
                 },
                 onError: ({ error }) => {
                     setError(error?.message);
@@ -188,25 +211,31 @@ const SignUpView = () => {
                                         type="button"
                                         disabled={pending}
                                         className="w-full"
+                                        onClick={() =>
+                                            handleSocialSignIn("google")
+                                        }
                                     >
-                                        Google
+                                        <FaGoogle />
                                     </Button>
                                     <Button
                                         variant="outline"
                                         disabled={pending}
                                         type="button"
                                         className="w-full"
+                                        onClick={() =>
+                                            handleSocialSignIn("github")
+                                        }
                                     >
-                                        Github
+                                        <FaGithub />
                                     </Button>
                                 </div>
                                 <div className="text-center text-sm">
-                                    Don&apos;t have an account?{" "}
+                                    Already have an account?{" "}
                                     <Link
-                                        href="/sign-up"
+                                        href="/sign-in"
                                         className="underline underline-offset-4"
                                     >
-                                        Sign up
+                                        Sign in
                                     </Link>
                                 </div>
                             </div>
